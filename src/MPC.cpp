@@ -23,7 +23,7 @@ const double Lf = 2.67;
 
 const double ref_cte = 0;
 const double ref_epsi = 0;
-const double ref_v = 100;
+const double ref_v = 70;
 
 const size_t x_start = 0;
 const size_t y_start = x_start + N;
@@ -51,26 +51,38 @@ class FG_eval
 
 		fg[0] = 0;
 
+		// Reduced from 2000 in order for the ride to be smoother. We swing left and right quite a bit otherwise.
+		double w_cte = 1000;
+		double w_epsi = 1000;
+
+		
+		// Increased these weights drastically in order to keep the car in the lanes.
+		// Car would go ballistics oterwise.
+		double w_d1 = 100;
+		double w_a1 = 100;
+		double w_d2 = 100000;
+		double w_a2 = 1000;
 
 		for( int i = 0; i < N; i++ )
 		{
-			fg[0] += 2000*CppAD::pow(vars[cte_start + i] - ref_cte, 2);
-			fg[0] += 2000*CppAD::pow(vars[epsi_start + i] - ref_epsi, 2);
+			fg[0] += w_cte*CppAD::pow(vars[cte_start + i] - ref_cte, 2);
+			fg[0] += w_epsi*CppAD::pow(vars[epsi_start + i] - ref_epsi, 2);
 			fg[0] += CppAD::pow(vars[v_start + i] - ref_v, 2);
 		}
 
 
 		for (int i = 0; i< N - 1; i++)
 		{
-			fg[0] += 5*CppAD::pow(vars[delta_start + i], 2);
-			fg[0] += 5*CppAD::pow(vars[a_start + i], 2);
+			fg[0] += w_d1*CppAD::pow(vars[delta_start + i], 2);
+			fg[0] += w_a1*CppAD::pow(vars[a_start + i], 2);
+			
 		}
 
 
 		for (int i = 0; i < N - 2; i++)
 		{
-			fg[0] += 200*CppAD::pow(vars[delta_start + i + 1] - vars[delta_start + i], 2);
-			fg[0] += 10*CppAD::pow(vars[a_start + i + 1] - vars[a_start + i], 2);
+			fg[0] += w_d2*CppAD::pow(vars[delta_start + i + 1] - vars[delta_start + i], 2);
+			fg[0] += w_a2*CppAD::pow(vars[a_start + i + 1] - vars[a_start + i], 2);
 		}
 
 		// Setup constraints
