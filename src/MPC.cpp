@@ -257,5 +257,5 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs)
 		result.push_back(solution.x[x_start + i + 1]);
 		result.push_back(solution.x[y_start + i + 1]);
 	}
-	return {};
+	return result;
 }
