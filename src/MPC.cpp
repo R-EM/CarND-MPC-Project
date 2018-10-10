@@ -82,38 +82,38 @@ class FG_eval
 		fg[1 + epsi_start] = vars[epsi_start];
 
 		// The rest of the constraints
-		for (int t = 0; t < N; t++)
+		for (int t = 1; t < N; t++)
 		{
 
+			// Values at t - 1
+			AD<double> x0 = vars[x_start + t-1];
+			AD<double> y0 = vars[y_start + t-1];
+			AD<double> psi0 = vars[psi_start + t-1];
+			AD<double> v0 = vars[v_start + t-1];
+			AD<double> cte0 = vars[cte_start + t-1];
+			AD<double> epsi0 = vars[epsi_start + t-1];
+
 			// Values at t
-			AD<double> x0 = vars[x_start + t];
-			AD<double> y0 = vars[y_start + t];
-			AD<double> psi0 = vars[psi_start + t];
-			AD<double> v0 = vars[v_start + t];
-			AD<double> cte0 = vars[cte_start + t];
-			AD<double> epsi0 = vars[epsi_start + t];
-
-			// Values at t+1
-			AD<double> x1 = vars[x_start + t + 1];
-			AD<double> y1 = vars[y_start + t + 1];
-			AD<double> psi1 = vars[psi_start + t + 1];
-			AD<double> v1 = vars[v_start + t + 1];
-			AD<double> cte1 = vars[cte_start + t + 1];
-			AD<double> epsi1 = vars[epsi_start + t + 1];
+			AD<double> x1 = vars[x_start + t];
+			AD<double> y1 = vars[y_start + t];
+			AD<double> psi1 = vars[psi_start + t];
+			AD<double> v1 = vars[v_start + t];
+			AD<double> cte1 = vars[cte_start + t];
+			AD<double> epsi1 = vars[epsi_start + t];
 
 
-			AD<double> delta0 = vars[delta_start + t];
-			AD<double> a0 = vars[a_start + t];
+			AD<double> delta0 = vars[delta_start + t-1];
+			AD<double> a0 = vars[a_start + t-1];
 
-			AD<double> f0 = coeffs[0] + coeffs[1] * x0 + coeffs[2] * CppAD::pow(x0, 2) + coeffs[3] * CppAD::pow(x0, 3);
+			AD<double> f0 = coeffs[0] + coeffs[1]*x0 + coeffs[2]*CppAD::pow(x0, 2) + coeffs[3]*CppAD::pow(x0, 3);
 			AD<double> psides0 = CppAD::atan(3*coeffs[3]*x0*x0 + 2*coeffs[2]*x0 + coeffs[1]);
 
-			fg[2 + x_start + t] = x1 - (x0 + v0*CppAD::cos(psi0)*dt);
-			fg[2 + y_start + t] = y1 - (y0 + v0*CppAD::sin(psi0)*dt);
-			fg[2 + psi_start + t] = psi1 - (psi0 - v0*delta0/Lf*dt);
-			fg[2 + v_start + t] = v1 - (v0 + a0*dt);
-			fg[2 + cte_start + t] = cte1 - ((f0 - y0) + (v0*CppAD::sin(epsi0)*dt));
-			fg[2 + epsi_start + t] = epsi1 - ((psi0 - psides0) - v0*delta0/Lf * dt);
+			fg[1 + x_start + t] = x1 - (x0 + v0*CppAD::cos(psi0)*dt);
+			fg[1 + y_start + t] = y1 - (y0 + v0*CppAD::sin(psi0)*dt);
+			fg[1 + psi_start + t] = psi1 - (psi0 - v0*delta0/Lf*dt);
+			fg[1 + v_start + t] = v1 - (v0 + a0*dt);
+			fg[1 + cte_start + t] = cte1 - ((f0 - y0) + (v0*CppAD::sin(epsi0)*dt));
+			fg[1 + epsi_start + t] = epsi1 - ((psi0 - psides0) - v0*delta0/Lf * dt);
 		}
 	}
 };
@@ -160,8 +160,8 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs)
 	// to the max negative and positive values.
 	for (int i = 0; i < delta_start; i++)
 	{
-		vars_lowerbound[i] = -0.436332*Lf;
-		vars_upperbound[i] = 0.436332*Lf;
+		vars_lowerbound[i] = -1.0e19;
+		vars_upperbound[i] = 1.0e19;
 	}
 	
 	// The upper and lower limits of delta are set to -25 and 25
@@ -169,16 +169,16 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs)
 	// NOTE: Feel free to change this to something else.
 	for (int i = delta_start; i < a_start; i++)
 	{
-		vars_lowerbound[i] = -1;
-		vars_upperbound[i] = 1;
+		vars_lowerbound[i] = -0.436332;
+		vars_upperbound[i] = 0.436332;
 	}
 	
 	// Acceleration/decceleration upper and lower limits.
 	// NOTE: Feel free to change this to something else.
 	for (int i = a_start; i < n_vars; i++)
 	{
-		vars_lowerbound[i] = -1.0e19;
-		vars_upperbound[i] = 1.0e19;
+		vars_lowerbound[i] = -1;
+		vars_upperbound[i] = 1;
 	}
 	
 	// Lower and upper limits for the constraints
