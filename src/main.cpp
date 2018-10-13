@@ -130,6 +130,22 @@ int main()
 					double throttle_value = j[1]["throttle"];
 
 					Eigen::VectorXd state(6);
+					/*
+					// Implement a 100ms delay
+					double delta= j[1]["steering_angle"];
+          			double a = j[1]["throttle"];
+					double dt = 0.1;
+					
+					double x_delay = 0 + v*cos(0)*dt;
+					double y_delay = 0 + v*sin(0)*dt;
+					double psi_delay = 0 - v*delta*dt/2.67;
+					double v_delay = v + a*dt;
+					double cte_delay = cte + v*sin(epsi)*dt;
+					double epsi_delay = epsi - v*atan(coeffs[1])*dt/2.67;
+
+					
+					state << x_delay, y_delay, psi_delay, v_delay, cte_delay, epsi_delay;
+					*/
 					state << 0, 0, 0, v, cte, epsi;
 
 					/*
