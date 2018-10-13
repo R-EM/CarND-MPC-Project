@@ -11,12 +11,8 @@ The update equations are the equations shown in the image above. For example x_(
 
 Student discusses the reasoning behind the chosen N (timestep length) and dt (elapsed duration between timesteps) values. Additionally the student details the previous values tried.
 
-The values used for N and dt were 10 and 0.1 respecively. These values were the provided values by Udacity's walkthrough video. Changing these did not seem necessary once I was finished tuning the weights for my controller to function correctly. But what I can do is provide an explanation as to why they were not changed. After 
+The values used for N and dt were 10 and 0.1 respecively. These values were the provided values by Udacity's walkthrough video. Changing these did not seem necessary once I was finished tuning the weights for my controller to function correctly. But what I can do is provide an explanation as to why they were not changed. 
 
-Reasoning for weights:
-I began by using the initial weights provided by Udacity's walkthrough video. However, these values did not provide a satisfactory result for the controller. Initially, the car would just drive straight out of the course, and that alone is reason enough to dismiss these weights. I began by increasing the values of the steering angle and the acceleration. 
-
-Reasoning for not changing N:
 The purpose of the Model Predictive Control (MPC) is to determine how the vehicle will work at N samples from the current sample, and adjust the next time sample values accordingly. By reducing the time step length, we are effectively reducing how far ahead we are looking into the future for determining the next values. Reducing this value could be a good idea if the model is highly inaccurate, since we cannot confidently rely on it. Increasing the time step length would be the equivalent of looking further ahead into the future and adjusting our values accordingly. This would be a good idea if our model is highly accurate, but this comes at the cost of higher computational power, which may not always be possible. 
 
 The tradeoffs are as follow:
@@ -37,3 +33,47 @@ This is done in rows 104 to 112 in main.cpp. The waypoints are transformed into 
 
 The student implements Model Predictive Control that handles a 100 millisecond latency. Student provides details on how they deal with latency.
 
+Seeing how the duration between timesteps is already 100ms, all we need to do is use the sample before the current one for the throttle and the steering angle. This has been implemented in MPC.cpp in lines 121-126, and by using the variable called "delay", we can also vary the delay. Implementing this change has not cause much trouble for the MPC controller because of the weights I've used. Although the vehicle oscillates a little more compared to the controller without the delay, the vehicle still successfully navigates the entire route without any trouble. As for the weights that I've chosen, I began by using the initial weights provided by Udacity's walkthrough video. However, these values did not provide a satisfactory result for the controller. Initially, the car would just drive straight out of the course, and that alone is reason enough to dismiss these weights. The provided values were as following:
+
+w_cte = 2000;
+w_epsi = 2000;
+w_d1 = 5;
+w_a1 = 5;
+w_d2 = 200;
+w_a2 = 10;
+
+I began by increasing the values of the steering angle and the acceleration.
+
+w_cte = 2000;
+w_epsi = 2000;
+w_d1 = 50;
+w_a1 = 50;
+w_d2 = 200;
+w_a2 = 200;
+
+I still had issues with oversteering, which is why I decided to heavily penalise changes in steering angle and throttle. The change in weights happened as follows:
+
+w_cte = 2000;
+w_epsi = 2000;
+w_d1 = 100;
+w_a1 = 100;
+w_d2 = 500;
+w_a2 = 500;
+
+This change did not provide a satisfactory improvement for the performance. The steering angle still needed to be penalised somewhat more heavily that the throttle, which lead to the following change:
+
+w_cte = 2000;
+w_epsi = 2000;
+w_d1 = 100;
+w_a1 = 100;
+w_d2 = 10000;
+w_a2 = 1000;
+
+This provided some improvements, but after changing w_d2 to 100000 is when my controller's performance became satisfactory. However, while this controller fulfilled the rubric's requirements, there was still an annoying oscillation that was taking place, which is why cte and epsi were lowered somewhat. The final weights are as follow;
+
+w_cte = 1000;
+w_epsi = 1000;
+w_d1 = 100;
+w_a1 = 100;
+w_d2 = 100000;
+w_a2 = 1000;
